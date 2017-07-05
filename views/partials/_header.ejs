@@ -6,9 +6,10 @@
       <li>
         <a href="/urls/new">Add new...</a></li>
       <li><% if (userID === null || userID === undefined) { %>
-          <a href="/register">Register</a>
-          <% } else { %><a href="#">Welcome back, <%= userID.username %></a><% } %>
-      </li>
+          <a href="/register">Register</a></li>
+          <li><a href="/login">Login</a></li>
+          <% } else { %><a href="#">Welcome back, <%= userID.username %></a></li><% } %>
+      
     </div>
   </div>
 </nav>
