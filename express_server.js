@@ -14,7 +14,12 @@ const urlDatabase = {
 }
 
 const users = {
-
+  "asdfa": {
+    userID: "asdfa",
+    username: "hello",
+    email: "banana@id.com",
+    password: "hello"
+  }
 }
 
 // if i want to not repeat myself,
@@ -105,16 +110,19 @@ app.post("/urls/:id/delete", (req, res) => {
 
 // Login
 app.post("/login", (req, res) => {
-  
-  res.cookie('username', req.body['username'])
-  console.log(res.cookies, req.body['username']);
+  var passLookup = matchToPassword(req.body['emailOrUsername'])
+  if (passLookup[0] && users[passLookup[1]].password === req.body['password']) {
+    res.cookie('userID', users[passLookup[1]])
+
+    console.log("yo")
+  } 
   res.redirect(`/urls`)
 })
 
 // Register
 app.post("/register", (req, res) => {
   if (req.body['username'] === "" || req.body['email'] === "" || req.body['password'] == ""
-          || emailExists(req.body['email'])) {
+          || emailOrUserExists(req.body['email'], req.body['username'])) {
     res.redirect(400, `/register`);
     return
   }
@@ -137,12 +145,22 @@ app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`)
 })
 
-function emailExists(checkEmail) {
+function matchToPassword(loginInfo, password) {
+  var userID = ""
   for (let user in users) {
-    for (let email in users[user]) {
-      if (users[user][email] === checkEmail) {
-        return true;
-      }
+    userID = users[user].userID
+    if (users[user].email === loginInfo || users[user].username === loginInfo) {
+      return [true, userID];
+    }
+  }
+  return [false, null];
+}
+
+function emailOrUserExists(loginInfo) {
+  // {...} in asdfas
+  for (let user in users) {
+    if (users[user].email === loginInfo || users[user].username === loginInfo) {
+      return true;
     }
   }
   return false;
