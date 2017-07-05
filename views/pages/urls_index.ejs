@@ -8,7 +8,7 @@
 
   <ul class="list-group">
     <% for (let link in links) { %>
-    <li class="list-group-item"><%= link %> - <%= links[link] %>
+    <li class="list-group-item"><b><%= link %></b> - <%= links[link] %>
       <a href="/urls/<%=link%>"><button class="btn btn-warning">Edit</button></a>
       <form style="display: inline-block;"method="POST" action="/urls/<%= link %>/delete">
         <button class="btn btn-danger" aria-label="Left Align" name="delete" value="delete"><span class="glyphicon glyphicon-trash"></span> Delete</button>
