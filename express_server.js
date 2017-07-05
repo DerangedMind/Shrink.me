@@ -69,9 +69,11 @@ app.get("/logout", (req, res) => {
   res.redirect(`/urls`)
 })
 
-// app.get("/login", (req, res) => {
-//   res.render("pages/urls_login")
-// })
+app.get("/login", (req, res) => {
+  res.render("pages/urls_login", {
+    userID: req.cookies.userID
+  })
+})
 
 // POST ----------------------------------
 
