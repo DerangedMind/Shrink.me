@@ -115,7 +115,6 @@ app.post("/register", (req, res) => {
   if (req.body['username'] === "" || req.body['email'] === "" || req.body['password'] == ""
           || emailExists(req.body['email'])) {
     res.redirect(400, `/register`);
-
     return
   }
   let userID = generateRandomString();

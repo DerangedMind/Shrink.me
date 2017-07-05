@@ -6,4 +6,19 @@
     <% include ../partials/_header.ejs %>
   </body>
 
+  <h2>Login:</h2>
+  <div class="input-group">
+    <form action="/register" method="POST">
+      <label for="username">Username or email: </label>
+      <input name="username" type="username" placeholder="what should we call you?" >
+      <br/>
+      <label for="password">Password: </label>
+      <input name="password" type="password" >
+      <br/>
+      <input class="btn btn-info"type="submit" value="Login">
+    </form>
+  </div>
+
+  <a href="/register"><button class="btn btn-success">Don't have an account? Register here!</button></a>
+
 </html>
