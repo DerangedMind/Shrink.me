@@ -26,6 +26,10 @@ app.get("/", (req, res) => {
     })
 })
 
+app.get("/register/", (req, res) => {
+  res.render('pages/urls_register')
+})
+
 app.get("/urls/", (req, res) => {
   res.render("pages/urls_index", {
     links: urlDatabase,
@@ -89,6 +93,10 @@ app.post("/login", (req, res) => {
   res.redirect(`/urls`)
 })
 
+app.post("/register", (req, res) => {
+  res.redirect(`/urls`)
+})
+
 
 
 
@@ -107,24 +115,3 @@ function generateRandomString(longURL) {
   urlDatabase[randomString] = longURL
   return randomString;
 }
-
-
-
-
-/*
-
-key - value  delete
-key - value  delete
-key - value  delete
-
-shorturl - longurl 
-
-
-
-*/
-
-
-
-
-
-
