@@ -111,12 +111,14 @@ app.post("/urls/:id/delete", (req, res) => {
 // Login
 app.post("/login", (req, res) => {
   var passLookup = matchToPassword(req.body['emailOrUsername'])
-  if (passLookup[0] && users[passLookup[1]].password === req.body['password']) {
+  if (!passLookup[0]) {
+    res.send(403)
+  }
+  else if (users[passLookup[1]].password === req.body['password']) {
     res.cookie('userID', users[passLookup[1]])
-
-    console.log("yo")
+    res.redirect(`/`)
   } 
-  res.redirect(`/urls`)
+  
 })
 
 // Register
