@@ -8,9 +8,13 @@ app.set("view engine", "ejs")
 app.use(bodyParser.urlencoded({extended: true}))
 app.use(cookieParser())
 
-let urlDatabase = {
+const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
+}
+
+const users = {
+
 }
 
 // if i want to not repeat myself,
@@ -27,7 +31,10 @@ app.get("/", (req, res) => {
 })
 
 app.get("/register/", (req, res) => {
-  res.render('pages/urls_register')
+  res.render('pages/urls_register', {
+    links: urlDatabase,
+    username: req.cookies.username
+  })
 })
 
 app.get("/urls/", (req, res) => {
@@ -94,6 +101,11 @@ app.post("/login", (req, res) => {
 })
 
 app.post("/register", (req, res) => {
+  users[req.body['username']] = req.body['username']
+  users[req.body['username']]['username'] = req.body['username']
+  users[req.body['username']]['email'] = req.body['email']
+  users[req.body['username']]['password'] = req.body['password']
+  console.log(users)
   res.redirect(`/urls`)
 })
 

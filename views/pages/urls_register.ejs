@@ -3,11 +3,13 @@
   <% include ../partials/_head.ejs %>
 
   <body>
-<!--      include ../partials/_header.ejs 
- -->
+    <% include ../partials/_header.ejs %>
+
     <h2>Register:</h2>
     <form action="/register" method="POST">
-      <label for="email">Username: </label>
+      <label for="username">Username: </label>
+      <input name="username" type="username" placeholder="what should we call you?" />
+      <label for="email">Email: </label>
       <input name="email" type="email" placeholder="what should we call you?" />
       <label for="password">Password: </label>
       <input name="password" type="password"/>
