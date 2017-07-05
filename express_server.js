@@ -13,6 +13,10 @@ let urlDatabase = {
   "9sm5xK": "http://www.google.com"
 }
 
+// if i want to not repeat myself,
+// we could create our own middleware
+// 
+
 // GET ----------------------------------
 
 app.get("/", (req, res) => {
