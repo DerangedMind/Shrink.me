@@ -26,49 +26,52 @@ const users = {
 app.get("/", (req, res) => {
   res.render("pages/urls_index", {
       links: urlDatabase,
-      username: req.cookies.username
+      userID: req.cookies.userID
     })
 })
 
 app.get("/register/", (req, res) => {
   res.render('pages/urls_register', {
     links: urlDatabase,
-    username: req.cookies.username
+    userID: req.cookies.userID
   })
 })
 
 app.get("/urls/", (req, res) => {
   res.render("pages/urls_index", {
     links: urlDatabase,
-    username: req.cookies.username
+    userID: req.cookies.userID
   })
 })
 
 app.get("/urls/new", (req, res) => {
   res.render("pages/urls_new", {
-    username: req.cookies.username
+    userID: req.cookies.userID
   })
 })
 
 app.get("/urls/:id", (req, res) => {
-  let urlID = { 
+  res.render("pages/urls_show", { 
     shortURL: req.params.id,
     longURL: urlDatabase[req.params.id],
-    username: req.cookies.username
-  }
-  res.render("pages/urls_show", urlID)
+    userID: req.cookies.userID
+  })
 })
 
 app.get("/u/:shortURL", (req, res) => {
   res.redirect(`${urlDatabase[req.params.shortURL]}`, {
-    username: req.cookies.username
+    userID: req.cookies.userID
   })
 })
 
 app.get("/logout", (req, res) => {
-  res.clearCookie('username')
+  res.clearCookie('userID')
   res.redirect(`/urls`)
 })
+
+// app.get("/login", (req, res) => {
+//   res.render("pages/urls_login")
+// })
 
 // POST ----------------------------------
 
@@ -105,14 +108,21 @@ app.post("/login", (req, res) => {
   res.redirect(`/urls`)
 })
 
+// Register
 app.post("/register", (req, res) => {
-  users[req.body['username']] = { }
-  users[req.body['username']].userID = generateRandomString()
-  users[req.body['username']].username = req.body['username']
-  users[req.body['username']].email = req.body['email']
-  users[req.body['username']].password = req.body['password']
+  if (req.body['username'] === "" || req.body['email'] === "" || req.body['password'] == "") {
+    res.status(400);
 
-  res.cookie('username', req.body['username'])
+    return
+  }
+  var userID = generateRandomString();
+  users[userID] = { }
+  users[userID].userID = userID
+  users[userID].username = req.body['username']
+  users[userID].email = req.body['email']
+  users[userID].password = req.body['password']
+  console.log(users)
+  res.cookie('userID', users[userID])
 
   res.redirect(`/urls`)
 })

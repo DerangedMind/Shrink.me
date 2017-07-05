@@ -5,9 +5,9 @@
       <li><a href="/urls">URLS</a></li>
       <li>
         <a href="/urls/new">Add new...</a></li>
-      <li><% if (username === null || username === undefined) { %>
+      <li><% if (userID === null || userID === undefined) { %>
           <a href="/register">Register</a>
-          <% } else { %><a href="#">Welcome back, <%= username %></a><% } %>
+          <% } else { %><a href="#">Welcome back, <%= userID.username %></a><% } %>
       </li>
     </div>
   </div>
