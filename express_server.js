@@ -110,12 +110,13 @@ app.post("/login", (req, res) => {
 
 // Register
 app.post("/register", (req, res) => {
-  if (req.body['username'] === "" || req.body['email'] === "" || req.body['password'] == "") {
-    res.status(400);
+  if (req.body['username'] === "" || req.body['email'] === "" || req.body['password'] == ""
+          || emailExists(req.body['email'])) {
+    res.redirect(400, `/register`);
 
     return
   }
-  var userID = generateRandomString();
+  let userID = generateRandomString();
   users[userID] = { }
   users[userID].userID = userID
   users[userID].username = req.body['username']
@@ -133,6 +134,17 @@ app.post("/register", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`)
 })
+
+function emailExists(checkEmail) {
+  for (let user in users) {
+    for (let email in users[user]) {
+      if (users[user][email] === checkEmail) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
 
 function generateRandomString() {
   let randomString = ""
