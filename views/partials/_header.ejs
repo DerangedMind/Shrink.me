@@ -3,13 +3,16 @@
     <ul class="nav navbar-nav">
       <li><a href="/">Home</a></li>
       <li><a href="/urls">URLS</a></li>
-      <li><a href="/urls/new">Add new...</a></li>
       <li>
+        <a href="/urls/new">Add new...</a></li>
+      <li><% if (username === null || username === undefined) { %>
         <form action="/login" method="POST">
-          <label for="longURL">Sign in as:</label>
-          <input type="text" name="username" placeholder="Who are you?" style="width: 300px;">
+          <label for="username">Sign in as:</label>
+          <input id="username" type="text" name="username" placeholder="Who are you?" style="width: 125px;">
           <input type="submit" value="Submit">
         </form>
+          <% } else { %>Welcome back, <%= username %><% } %>
+      </li>
     </div>
   </div>
 </nav>
