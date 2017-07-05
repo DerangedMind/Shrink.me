@@ -1,0 +1,23 @@
+<html>
+
+  <% include ../partials/_head.ejs %>
+
+<body>
+
+  <% include ../partials/_header.ejs %>
+
+  <ul class="list-group">
+    <% for (let link in links) { %>
+    <li class="list-group-item"><%= link %> - <%= links[link] %>
+      <form method="POST" action="/urls/<%= link %>/delete">
+        <button class="btn btn-danger" aria-label="Left Align" name="delete" value="delete"><span class="glyphicon glyphicon-trash"></span> Delete</button>
+      </form>
+    </li>
+
+    <% }; %>
+  </ul>
+</body>
+
+</html>
+
+
