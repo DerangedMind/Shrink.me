@@ -28,6 +28,19 @@ app.get("/urls/new", (req, res) => {
   res.render("pages/urls_new")
 })
 
+app.get("/urls/:id", (req, res) => {
+  let urlID = { 
+    shortURL: req.params.id,
+    longURL: urlDatabase[req.params.id]
+  }
+  res.render("pages/urls_show", urlID)
+})
+
+
+app.get("/u/:shortURL", (req, res) => {
+  res.redirect(`${urlDatabase[req.params.shortURL]}`)
+})
+
 app.post("/urls", (req, res) => {
   console.log(req.body);
 
@@ -35,14 +48,6 @@ app.post("/urls", (req, res) => {
   urlDatabase[shortURL] = req.body
 
   res.redirect(`/urls/${shortURL}`);
-})
-
-app.get("/urls/:id", (req, res) => {
-  let urlID = { 
-    shortURL: req.params.id,
-    longURL: urlDatabase[req.params.id]
-  }
-  res.render("pages/urls_show", urlID)
 })
 
 app.post("/urls/:id", (req, res) => {
@@ -58,9 +63,6 @@ app.post("/urls/:id/delete", (req, res) => {
   res.redirect(`/urls`)
 })
 
-app.get("/u/:shortURL", (req, res) => {
-  res.redirect(`${urlDatabase[req.params.shortURL]}`)
-})
 
 
 
