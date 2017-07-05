@@ -72,6 +72,8 @@ app.get("/logout", (req, res) => {
 
 // POST ----------------------------------
 
+
+// Add URL
 app.post("/urls", (req, res) => {
   console.log(req.body);
 
@@ -81,6 +83,7 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${shortURL}`);
 })
 
+// Edit URL
 app.post("/urls/:id", (req, res) => {
   delete urlDatabase[req.params.id]
   
@@ -89,11 +92,13 @@ app.post("/urls/:id", (req, res) => {
   res.redirect(`/urls/${shortURL}`);
 })
 
+// Delete URL
 app.post("/urls/:id/delete", (req, res) => {
   delete urlDatabase[req.params.id]
   res.redirect(`/urls`)
 })
 
+// Login
 app.post("/login", (req, res) => {
   res.cookie('username', req.body['username'])
   console.log(res.cookies, req.body['username']);
@@ -101,11 +106,14 @@ app.post("/login", (req, res) => {
 })
 
 app.post("/register", (req, res) => {
-  users[req.body['username']] = req.body['username']
-  users[req.body['username']]['username'] = req.body['username']
-  users[req.body['username']]['email'] = req.body['email']
-  users[req.body['username']]['password'] = req.body['password']
-  console.log(users)
+  users[req.body['username']] = { }
+  users[req.body['username']].userID = generateRandomString()
+  users[req.body['username']].username = req.body['username']
+  users[req.body['username']].email = req.body['email']
+  users[req.body['username']].password = req.body['password']
+
+  res.cookie('username', req.body['username'])
+
   res.redirect(`/urls`)
 })
 
@@ -116,7 +124,7 @@ app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`)
 })
 
-function generateRandomString(longURL) {
+function generateRandomString() {
   let randomString = ""
   let possibleChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
   
@@ -124,6 +132,5 @@ function generateRandomString(longURL) {
     randomString += possibleChars[Math.floor(Math.random() * possibleChars.length)]
   }
 
-  urlDatabase[randomString] = longURL
   return randomString;
 }

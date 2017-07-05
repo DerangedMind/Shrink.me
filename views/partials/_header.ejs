@@ -6,12 +6,8 @@
       <li>
         <a href="/urls/new">Add new...</a></li>
       <li><% if (username === null || username === undefined) { %>
-        <form action="/login" method="POST">
-          <label for="username">Sign in as:</label>
-          <input id="username" type="text" name="username" placeholder="Who are you?" style="width: 125px;">
-          <input type="submit" value="Submit">
-        </form>
-          <% } else { %>Welcome back, <%= username %><% } %>
+          <a href="/register">Register</a>
+          <% } else { %><a href="#">Welcome back, <%= username %></a><% } %>
       </li>
     </div>
   </div>
