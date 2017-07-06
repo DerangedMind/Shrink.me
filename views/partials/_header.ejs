@@ -2,13 +2,14 @@
   <div class="container-fluid">
     <ul class="nav navbar-nav nav-pills">
       <li><a href="/">Home</a></li>
+      <% if (userID === null || userID === undefined) { %>
+      <li><a href="/register">Register</a></li>
+      <li><a href="/login">Login</a></li>
+      <% } else { %>
       <li><a href="/urls">URLS</a></li>
-      <li>
-        <a href="/urls/new">Add new...</a></li>
-      <li><% if (userID === null || userID === undefined) { %>
-          <a href="/register">Register</a></li>
-          <li><a href="/login">Login</a></li>
-          <% } else { %><a href="#">Welcome back, <%= userID.username %></a></li><% } %>
+      <li><a href="/urls/new">Add new...</a></li>
+      <li><a href="#">Welcome back, <%= userID.username %></a></li>
+      <% } %>
       
     </div>
   </div>
