@@ -1,39 +1,37 @@
 const express = require("express")
 const app = express()
 const bodyParser = require("body-parser")
-const cookieParser = require("cookie-parser")
 const bcrypt = require("bcrypt")
+const cookieSession = require("cookie-session")
 const PORT = process.env.PORT || 8080 // default port 8080
 
 app.set("view engine", "ejs")
 app.use(bodyParser.urlencoded({extended: true}))
-app.use(cookieParser())
+app.use(cookieSession( {
+  name: 'session',
+  keys: ['key1', 'key2'],
 
-const urlDatabase = {
-  "b2xVn2":  {
-    longURL: "http://www.lighthouselabs.ca",
-    user: "asdfa"
-  },
-  "9sm5xK": {
-    longURL: "http://www.google.com",
-    user: "fdsa"
-  }
-}
+  maxAge: 24 * 60 * 60 * 1000
+}))
 
 const users = {
   "asdfa": {
-    user: "asdfa",
+    userID: "asdfa",
     username: "hello",
     email: "banana@id.com",
     password: "hello",
-    urls: ["b2xVn2"]
+    urls: {
+      "b2xVn2": "http://www.lighthouselabs.ca"
+    }
   },
   "fdsa": {
-    user: "fdsa",
+    userID: "fdsa",
     username: "yo",
     email: "banan@ud.com",
     password: "hello",
-    urls: ["9sm5xK"]
+    urls: {
+      "9sm5xK": "http://www.google.com"
+    }
   }
 }
 
@@ -44,7 +42,7 @@ const users = {
 // GET for URLs ----------------------------------
 
 app.get("/", (req, res) => {
-  if (req.cookies.user === undefined) {
+  if (req.session.user === undefined) {
     res.redirect('/login')
     return
   }
@@ -57,51 +55,39 @@ app.get("/u/:shortURL", (req, res) => {
 })
 
 app.get("/urls", (req, res) => {
-  if (req.cookies.user === undefined) {
+  if (req.session.user === undefined) {
     res.redirect('/login')
     return
   }
-  console.log(req.cookies.user)
-  const userURLs = getUserURLs(req.cookies.user.userID)
-  console.log(userURLs)
-  /*
-    When we go to /urls
-      send urlDB, userURL names, and user cookie info
-    
-    we already checked if logged in...
-    list each of user's URLs by:
-      checking userURLs
-      pulling userURLs from urlDB
-      post userURL
 
-  */
-
+  const userURLs = getUserURLs(req.session.user.userID)
+  console.log(Object.keys(userURLs).length)
   res.render("pages/urls_index", {
     urlDB: urlDatabase,
     userURLs: userURLs,
-    user: req.cookies.user
+    user: req.session.user
   })
 })
 
 app.get("/urls/new", (req, res) => {
-  if (req.cookies.user === undefined) {
+  if (req.session.user === undefined) {
     res.redirect('/login')
     return
   }
   res.render("pages/urls_new", {
     urlDB: urlDatabase,
-    user: req.cookies.user
+    user: req.session.user
   })
 })
 
 app.get("/urls/:id", (req, res) => {
-  if (req.cookies.user.userID !== urlDatabase[req.params.id].userID) {
+  if (req.session.user.userID !== urlDatabase[req.params.id].userID) {
     res.redirect(403, '/urls')
     return
   }
   res.render("pages/urls_show", { 
     urlDB: urlDatabase,
-    user: req.cookies.user,
+    user: req.session.user,
     shortURL: req.params.id,
     longURL: urlDatabase[req.params.id].longURL
   })
@@ -110,21 +96,21 @@ app.get("/urls/:id", (req, res) => {
 // GET for Login/Signup -------------------------------------
 
 app.get("/logout", (req, res) => {
-  res.clearCookie('user')
+  req.session = null
   res.redirect(`/urls`)
 })
 
 app.get("/login", (req, res) => {
   res.render("pages/urls_login", {
     urlDB: urlDatabase,
-    user: req.cookies.user
+    user: req.session.user
   })
 })
 
 app.get("/register", (req, res) => {
   res.render('pages/urls_register', {
     urlDB: urlDatabase,
-    user: req.cookies.user
+    user: req.session.user
   })
 })
 
@@ -133,7 +119,7 @@ app.get("/register", (req, res) => {
 
 // Add URL
 app.post("/urls", (req, res) => {
-  if (req.cookies.user === undefined) {
+  if (req.session.user === undefined) {
     res.redirect('/login')
     return
   }
@@ -145,7 +131,7 @@ app.post("/urls", (req, res) => {
 
 // Edit URL
 app.post("/urls/:id", (req, res) => {
-  if (req.cookies.user.userID !== urlDatabase[req.params.id].userID) {
+  if (req.session.user.userID !== urlDatabase[req.params.id].userID) {
     res.redirect(403, '/urls')
     return
   }
@@ -157,12 +143,15 @@ app.post("/urls/:id", (req, res) => {
 
 // Delete URL
 app.post("/urls/:id/delete", (req, res) => {
-  if (req.cookies.user.userID !== urlDatabase[req.params.id].userID) {
+  if (req.session.user.userID !== urlDatabase[req.params.id].userID) {
     res.redirect(403, '/urls')
     return
   }
   delete urlDatabase[req.params.id]
+  delete users[req.session.user.userID].urls[req.params.id]
   res.redirect(`/urls`)
+
+  ///////////// need to redirect but give the proper objects
 })
 
 
@@ -175,7 +164,7 @@ app.post("/login", (req, res) => {
     res.send(403)
   }
   else if (bcrypt.compareSync(req.body['password'], users[passLookup[1]].password)) {
-    res.cookie('user', users[passLookup[1]])
+    req.session.user = users[passLookup[1]][userID]
     res.redirect(`/`)
   } 
 })
@@ -192,7 +181,7 @@ app.post("/register", (req, res) => {
   }
   
   const user = createNewUser(req)
-  res.cookie('user', user)
+  req.session.user = user[userID]
 
   res.redirect(`/urls`)
 })
@@ -209,8 +198,8 @@ function createNewURL(req) {
   const shortURL = generateRandomString(req.body['longURL'])
   urlDatabase[shortURL] = {}
   urlDatabase[shortURL].longURL = req.body['longURL']
-  urlDatabase[shortURL].userID = req.cookies.user.userID
-  users[req.cookies.user.userID]['urls'].push(shortURL)
+  urlDatabase[shortURL].userID = req.session.user.userID
+  users[req.session.user.userID]['urls'].push(shortURL)
 
   return shortURL
 }

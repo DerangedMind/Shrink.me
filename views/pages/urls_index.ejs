@@ -7,16 +7,17 @@
   <% include ../partials/_header.ejs %>
 
   <ul class="list-group">
-    <% for (let shortLink in userURLs) { %>
-    <li class="list-group-item"><b><%= shortLink %></b> - <%= urlDB[shortLink].longURL %>
+    <% if (Object.keys(userURLs).length > 0) { %>
+      <% for (let shortLink in userURLs) { %>
+      <li class="list-group-item"><b><%= shortLink %></b> - <%= urlDB[shortLink].longURL %>
 
-      <a href="/urls/<%=shortLink%>"><button class="btn btn-warning">Edit</button></a>
-      <form style="display: inline-block;"method="POST" action="/urls/<%= shortLink %>/delete">
-        <button class="btn btn-danger" aria-label="Left Align" name="delete" value="delete"><span class="glyphicon glyphicon-trash"></span> Delete</button>
-      </form>
-    </li>
-
-    <% }; %>
+        <a href="/urls/<%=shortLink%>"><button class="btn btn-warning">Edit</button></a>
+        <form style="display: inline-block;"method="POST" action="/urls/<%= shortLink %>/delete">
+          <button class="btn btn-danger" aria-label="Left Align" name="delete" value="delete"><span class="glyphicon glyphicon-trash"></span> Delete</button>
+        </form>
+      </li>
+      <% } %>
+    <% } %>
   </ul>
 </body>
 
