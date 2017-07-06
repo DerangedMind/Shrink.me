@@ -44,27 +44,41 @@ const users = {
 // GET for URLs ----------------------------------
 
 app.get("/", (req, res) => {
-  res.render("pages/urls_index", {
-      urlDB: urlDatabase,
-      userDB: users,
-      user: req.cookies.user
-    })
+  if (req.cookies.user === undefined) {
+    res.redirect('/login')
+    return
+  }
+  
+  res.redirect('/urls')
 })
 
 app.get("/u/:shortURL", (req, res) => {
   res.redirect(`${urlDatabase[req.params.shortURL].longURL}`)
 })
 
-app.get("/urls/", (req, res) => {
+app.get("/urls", (req, res) => {
   if (req.cookies.user === undefined) {
     res.redirect('/login')
     return
   }
-  
-  const userURLs = getUserURLs(users[req.cookies.user.userID])
+  console.log(req.cookies.user)
+  const userURLs = getUserURLs(req.cookies.user.userID)
+  console.log(userURLs)
+  /*
+    When we go to /urls
+      send urlDB, userURL names, and user cookie info
+    
+    we already checked if logged in...
+    list each of user's URLs by:
+      checking userURLs
+      pulling userURLs from urlDB
+      post userURL
+
+  */
 
   res.render("pages/urls_index", {
-    urlDB: userURLs,
+    urlDB: urlDatabase,
+    userURLs: userURLs,
     user: req.cookies.user
   })
 })
@@ -124,12 +138,8 @@ app.post("/urls", (req, res) => {
     return
   }
 
-  let shortURL = generateRandomString(req.body['longURL'])
-  urlDatabase[shortURL] = {}
-  urlDatabase[shortURL].longURL = req.body['longURL']
-
-  urlDatabase[shortURL].userID = req.cookies.user.userID
-
+  var shortURL = createNewURL(req)
+  
   res.redirect(`/urls/${shortURL}`);
 })
 
@@ -141,8 +151,7 @@ app.post("/urls/:id", (req, res) => {
   }
   delete urlDatabase[req.params.id]
   
-  let shortURL = generateRandomString(req.body['longURL'])
-  urlDatabase[shortURL]
+  var shortURL = createNewURL(req)
   res.redirect(`/urls/${shortURL}`);
 })
 
@@ -196,6 +205,16 @@ app.listen(PORT, () => {
 
 // ------------------------------------------------------
 
+function createNewURL(req) {
+  const shortURL = generateRandomString(req.body['longURL'])
+  urlDatabase[shortURL] = {}
+  urlDatabase[shortURL].longURL = req.body['longURL']
+  urlDatabase[shortURL].userID = req.cookies.user.userID
+  users[req.cookies.user.userID]['urls'].push(shortURL)
+
+  return shortURL
+}
+
 function createNewUser(req) {
   const userID = generateRandomString()
   
@@ -207,16 +226,18 @@ function createNewUser(req) {
   const password = req.body['password']
   const hashed_password = bcrypt.hashSync(password, 10)
   users[userID].password = hashed_password
-  users[userID].urls = {}
+  users[userID].urls = []
 
   return users[userID]
 }
 
 function getUserURLs(userID) {
   let urls = {  }
+  const userURLs = users[userID]['urls']
+  for (let i = 0; i < users[userID]['urls'].length; i++) {
 
-  for (let i = 0; i < userID['urls'].length; i++) {
-    urls[userID['urls'][i]] = urlDatabase[userID['urls'][i]]
+    // urls[asdf['urls'][1]] = urlDatabase[asdf['urls'][1]]
+    urls[userURLs[i]] = urlDatabase[userURLs[i]]
   }
 
   return urls
