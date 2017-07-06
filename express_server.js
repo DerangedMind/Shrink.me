@@ -14,12 +14,21 @@ app.use(cookieSession( {
   maxAge: 24 * 60 * 60 * 1000
 }))
 
+// Wanted to place URL key:values into the users object,
+// but this would then require the tinyURL link to search 
+// each user. urlDatabase is only created so that we can
+// easily lookup the key:value pair
+
+const urlDatabase = {
+
+}
+
 const users = {
   "asdfa": {
     userID: "asdfa",
     username: "hello",
     email: "banana@id.com",
-    password: "hello",
+    password: bcrypt.hashSync("hello", 10),
     urls: {
       "b2xVn2": "http://www.lighthouselabs.ca"
     }
@@ -39,14 +48,13 @@ const users = {
 // we could create our own middleware
 // 
 
-// GET for URLs ----------------------------------
+// GET for Redirect URLs ----------------------------------
 
 app.get("/", (req, res) => {
   if (req.session.user === undefined) {
     res.redirect('/login')
     return
   }
-  
   res.redirect('/urls')
 })
 
@@ -54,18 +62,19 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(`${urlDatabase[req.params.shortURL].longURL}`)
 })
 
+// GET for User URL pages ----------------------------------
+
 app.get("/urls", (req, res) => {
   if (req.session.user === undefined) {
     res.redirect('/login')
     return
   }
 
-  const userURLs = getUserURLs(req.session.user.userID)
-  console.log(Object.keys(userURLs).length)
+  const userURLs = users[req.session.user].urls
+
   res.render("pages/urls_index", {
-    urlDB: urlDatabase,
     userURLs: userURLs,
-    user: req.session.user
+    user: users[req.session.user]
   })
 })
 
@@ -75,21 +84,19 @@ app.get("/urls/new", (req, res) => {
     return
   }
   res.render("pages/urls_new", {
-    urlDB: urlDatabase,
-    user: req.session.user
+    user: users[req.session.user]
   })
 })
 
 app.get("/urls/:id", (req, res) => {
-  if (req.session.user.userID !== urlDatabase[req.params.id].userID) {
+  if (users[req.session.user].urls[req.params.id] !== urlDatabase[req.params.id]) {
     res.redirect(403, '/urls')
     return
   }
   res.render("pages/urls_show", { 
-    urlDB: urlDatabase,
-    user: req.session.user,
+    user: users[req.session.user], 
     shortURL: req.params.id,
-    longURL: urlDatabase[req.params.id].longURL
+    longURL: urlDatabase[req.params.id]
   })
 })
 
@@ -101,16 +108,26 @@ app.get("/logout", (req, res) => {
 })
 
 app.get("/login", (req, res) => {
+  if (req.session.user !== undefined) {
+    res.redirect('/urls')
+    return
+  }
+
+  // sending user for header to verify if logged in
   res.render("pages/urls_login", {
-    urlDB: urlDatabase,
-    user: req.session.user
+    user: users[req.session.user]
   })
 })
 
 app.get("/register", (req, res) => {
+  if (req.session.user !== undefined) {
+    res.redirect('/urls')
+    return
+  }
+
+  // sending user for header to verify if logged in
   res.render('pages/urls_register', {
-    urlDB: urlDatabase,
-    user: req.session.user
+    user: users[req.session.user]
   })
 })
 
@@ -128,14 +145,14 @@ app.post("/urls", (req, res) => {
   
   res.redirect(`/urls/${shortURL}`);
 })
-
+// TO FIX USER.USERID
 // Edit URL
 app.post("/urls/:id", (req, res) => {
-  if (req.session.user.userID !== urlDatabase[req.params.id].userID) {
+  if (users[req.session.user].urls[req.params.id] !== urlDatabase[req.params.id]) {
     res.redirect(403, '/urls')
     return
   }
-  delete urlDatabase[req.params.id]
+  delete users[req.session.user].urls[req.params.id]
   
   var shortURL = createNewURL(req)
   res.redirect(`/urls/${shortURL}`);
@@ -143,12 +160,12 @@ app.post("/urls/:id", (req, res) => {
 
 // Delete URL
 app.post("/urls/:id/delete", (req, res) => {
-  if (req.session.user.userID !== urlDatabase[req.params.id].userID) {
+  if (users[req.session.user].urls[req.params.id] !== urlDatabase[req.params.id]) {
     res.redirect(403, '/urls')
     return
   }
+  delete users[req.session.user].urls[req.params.id]
   delete urlDatabase[req.params.id]
-  delete users[req.session.user.userID].urls[req.params.id]
   res.redirect(`/urls`)
 
   ///////////// need to redirect but give the proper objects
@@ -159,14 +176,18 @@ app.post("/urls/:id/delete", (req, res) => {
 
 // Login
 app.post("/login", (req, res) => {
-  const passLookup = matchToPassword(req.body['emailOrUsername'])
+  const passLookup = emailOrUserExists(req.body['emailOrUsername'])
+  console.log(req.body['password'], passLookup[1].password)
   if (!passLookup[0]) {
-    res.send(403)
+    res.send(403, 'Wrong username or password')
   }
-  else if (bcrypt.compareSync(req.body['password'], users[passLookup[1]].password)) {
-    req.session.user = users[passLookup[1]][userID]
+  else if (bcrypt.compareSync(req.body['password'], passLookup[1].password)) {
+    req.session.user = passLookup[1].userID
     res.redirect(`/`)
   } 
+  else {
+    return
+  }
 })
 
 // Register
@@ -174,14 +195,14 @@ app.post("/register", (req, res) => {
   if (req.body['username'] === "" || 
         req.body['email'] === "" || 
         req.body['password'] == "" || 
-        emailOrUserExists(req.body['email'], req.body['username'])) {
+        emailOrUserExists(req.body['email'], req.body['username'])[0]) {
     
     res.redirect(400, `/register`);
     return
   }
   
   const user = createNewUser(req)
-  req.session.user = user[userID]
+  req.session.user = user.userID
 
   res.redirect(`/urls`)
 })
@@ -195,12 +216,10 @@ app.listen(PORT, () => {
 // ------------------------------------------------------
 
 function createNewURL(req) {
-  const shortURL = generateRandomString(req.body['longURL'])
-  urlDatabase[shortURL] = {}
-  urlDatabase[shortURL].longURL = req.body['longURL']
-  urlDatabase[shortURL].userID = req.session.user.userID
-  users[req.session.user.userID]['urls'].push(shortURL)
-
+  const shortURL = generateRandomString()
+  users[req.session.user]['urls'][shortURL] = req.body['longURL']
+  console.log(users[req.session.user]['urls'])
+  urlDatabase[shortURL] = req.body['longURL']
   return shortURL
 }
 
@@ -215,7 +234,7 @@ function createNewUser(req) {
   const password = req.body['password']
   const hashed_password = bcrypt.hashSync(password, 10)
   users[userID].password = hashed_password
-  users[userID].urls = []
+  users[userID].urls = { }
 
   return users[userID]
 }
@@ -223,34 +242,25 @@ function createNewUser(req) {
 function getUserURLs(userID) {
   let urls = {  }
   const userURLs = users[userID]['urls']
-  for (let i = 0; i < users[userID]['urls'].length; i++) {
+  for (let i = 0; i < Object.keys(userURLs).length; i++) {
 
-    // urls[asdf['urls'][1]] = urlDatabase[asdf['urls'][1]]
     urls[userURLs[i]] = urlDatabase[userURLs[i]]
   }
 
   return urls
 }
 
-function matchToPassword(loginInfo, password) {
-  let userID = ""
-  for (let user in users) {
-    userID = users[user].userID
-    if (users[user].email === loginInfo || users[user].username === loginInfo) {
-      return [true, userID];
+function emailOrUserExists(loginInfo) {
+  // {...} in asdfas
+  for (let userID in users) {
+    console.log(users[userID].email, users[userID].username, loginInfo)
+    if (users[userID].email === loginInfo || users[userID].username === loginInfo) {
+      console.log(users[userID])
+
+      return [true, users[userID]];
     }
   }
   return [false, null];
-}
-
-function emailOrUserExists(loginInfo) {
-  // {...} in asdfas
-  for (let user in users) {
-    if (users[user].email === loginInfo || users[user].username === loginInfo) {
-      return true;
-    }
-  }
-  return false;
 }
 
 function generateRandomString() {

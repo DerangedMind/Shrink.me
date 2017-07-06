@@ -8,11 +8,11 @@
 
   <ul class="list-group">
     <% if (Object.keys(userURLs).length > 0) { %>
-      <% for (let shortLink in userURLs) { %>
-      <li class="list-group-item"><b><%= shortLink %></b> - <%= urlDB[shortLink].longURL %>
+      <% for (let shortURL in userURLs) { %>
+      <li class="list-group-item"><b><%= shortURL %></b> - <%= userURLs[shortURL] %>
 
-        <a href="/urls/<%=shortLink%>"><button class="btn btn-warning">Edit</button></a>
-        <form style="display: inline-block;"method="POST" action="/urls/<%= shortLink %>/delete">
+        <a href="/urls/<%=shortURL%>"><button class="btn btn-warning">Edit</button></a>
+        <form style="display: inline-block;"method="POST" action="/urls/<%= shortURL %>/delete">
           <button class="btn btn-danger" aria-label="Left Align" name="delete" value="delete"><span class="glyphicon glyphicon-trash"></span> Delete</button>
         </form>
       </li>
