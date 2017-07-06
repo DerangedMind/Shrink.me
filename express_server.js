@@ -43,7 +43,7 @@ app.get("/", (req, res) => {
 })
 
 app.get("/u/:shortURL", (req, res) => {
-  res.redirect(`${urlDatabase[req.params.shortURL]}`, {
+  res.redirect(`${urlDatabase[req.params.shortURL].longURL}`, {
     userID: req.cookies.userID
   })
 })
@@ -53,6 +53,11 @@ app.get("/urls/", (req, res) => {
     res.redirect('/')
     return
   }
+
+  // TODO: only show user's URLS
+
+  // var userURLs = 
+
   res.render("pages/urls_index", {
     links: urlDatabase,
     userID: req.cookies.userID
@@ -149,10 +154,6 @@ app.post("/urls/:id/delete", (req, res) => {
 
 // Login
 app.post("/login", (req, res) => {
-  if (req.cookies.userID !== 'undefined') {
-    res.redirect('/')
-    return
-  }
   var passLookup = matchToPassword(req.body['emailOrUsername'])
   if (!passLookup[0]) {
     res.send(403)
