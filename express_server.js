@@ -20,7 +20,8 @@ app.use(cookieSession( {
 // easily lookup the key:value pair
 
 const urlDatabase = {
-
+  "b2xVn2": "http://www.lighthouselabs.ca",
+  "9sm5xK": "http://www.google.com"
 }
 
 const users = {
@@ -59,7 +60,7 @@ app.get("/", (req, res) => {
 })
 
 app.get("/u/:shortURL", (req, res) => {
-  res.redirect(`${urlDatabase[req.params.shortURL].longURL}`)
+  res.redirect(`${urlDatabase[req.params.shortURL]}`)
 })
 
 // GET for User URL pages ----------------------------------
@@ -217,9 +218,17 @@ app.listen(PORT, () => {
 
 function createNewURL(req) {
   const shortURL = generateRandomString()
-  users[req.session.user]['urls'][shortURL] = req.body['longURL']
+  let longURL = req.body['longURL']
+  
+  // ensure URL starts w/ either http:// or https://
+  console.log(longURL.slice(0,7), longURL.slice(0,8) )
+  if (longURL.slice(0, 7) !== "http://" && longURL.slice(0, 8) !== "https://") {
+    longURL = `http://${longURL}`
+  }
+
+  users[req.session.user]['urls'][shortURL] = longURL
   console.log(users[req.session.user]['urls'])
-  urlDatabase[shortURL] = req.body['longURL']
+  urlDatabase[shortURL] = longURL
   return shortURL
 }
 

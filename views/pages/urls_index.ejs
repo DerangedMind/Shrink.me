@@ -10,15 +10,16 @@
     <% if (Object.keys(userURLs).length > 0) { %>
       <% for (let shortURL in userURLs) { %>
       <li class="list-group-item"><b><%= shortURL %></b> - <%= userURLs[shortURL] %>
-
         <a href="/urls/<%=shortURL%>"><button class="btn btn-warning">Edit</button></a>
         <form style="display: inline-block;"method="POST" action="/urls/<%= shortURL %>/delete">
-          <button class="btn btn-danger" aria-label="Left Align" name="delete" value="delete"><span class="glyphicon glyphicon-trash"></span> Delete</button>
+          <button class="btn btn-danger" aria-label="Left Align" name="delete" value="delete" onclick="if (confirm('Are you sure you want to delete this link?') == true) return true; else return false;"><span class="glyphicon glyphicon-trash"></span> Delete</button>
         </form>
       </li>
       <% } %>
     <% } %>
   </ul>
+  <% include ../partials/_footer.ejs %>
+
 </body>
 
 </html>

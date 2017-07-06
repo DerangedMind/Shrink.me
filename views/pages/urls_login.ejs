@@ -3,22 +3,25 @@
   <% include ../partials/_head.ejs %>
 
   <body>
-    <% include ../partials/_header.ejs %>
-  </body>
+  <% include ../partials/_header.ejs %>
+  
+  <div class="container">
+    <h2>Login:</h2>
+    <div class="input-group">
+      <form action="/login" method="POST">
+        <label for="email">Username or Email: </label>
+        <input name="emailOrUsername" type="text" placeholder="what's yo name?" >
+        <br/>
+        <label for="password">Password: </label>
+        <input name="password" type="password" >
+        <br/>
+        <input class="btn btn-info"type="submit" value="Login">
+      </form>
+    </div>
 
-  <h2>Login:</h2>
-  <div class="input-group">
-    <form action="/login" method="POST">
-      <label for="email">Username or Email: </label>
-      <input name="emailOrUsername" type="text" placeholder="what's yo name?" >
-      <br/>
-      <label for="password">Password: </label>
-      <input name="password" type="password" >
-      <br/>
-      <input class="btn btn-info"type="submit" value="Login">
-    </form>
+    <a href="/register"><button class="btn btn-success">Don't have an account? Register here!</button></a>
   </div>
+  <% include ../partials/_footer.ejs %>
 
-  <a href="/register"><button class="btn btn-success">Don't have an account? Register here!</button></a>
-
+  </body>
 </html>
