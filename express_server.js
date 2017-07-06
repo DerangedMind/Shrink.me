@@ -15,7 +15,7 @@ const urlDatabase = {
   },
   "9sm5xK": {
     longURL: "http://www.google.com",
-    userID: "asdfa"
+    userID: "fdsa"
   }
 }
 
@@ -25,7 +25,14 @@ const users = {
     username: "hello",
     email: "banana@id.com",
     password: "hello",
-    urls: ["b2xVn2", "9sm5xK"]
+    urls: ["b2xVn2"]
+  },
+  "fdsa": {
+    userID: "fdsa",
+    username: "yo",
+    email: "banan@ud.com",
+    password: "hello",
+    urls: ["9sm5xK"]
   }
 }
 
@@ -38,72 +45,67 @@ const users = {
 app.get("/", (req, res) => {
   res.render("pages/urls_index", {
       links: urlDatabase,
-      userID: req.cookies.userID
+      userID: req.cookies.user
     })
 })
 
 app.get("/u/:shortURL", (req, res) => {
-  res.redirect(`${urlDatabase[req.params.shortURL].longURL}`, {
-    userID: req.cookies.userID
-  })
+  res.redirect(`${urlDatabase[req.params.shortURL].longURL}`)
 })
 
 app.get("/urls/", (req, res) => {
-  if (req.cookies.userID === 'undefined') {
-    res.redirect('/')
+  if (req.cookies.user === undefined) {
+    res.redirect('/login')
     return
   }
-
-  // TODO: only show user's URLS
-
-  // var userURLs = 
+  
+  var userURLs = getUserURLs(users[req.cookies.user.userID])
 
   res.render("pages/urls_index", {
-    links: urlDatabase,
-    userID: req.cookies.userID
+    links: userURLs,
+    userID: req.cookies.user
   })
 })
 
 app.get("/urls/new", (req, res) => {
-  if (req.cookies.userID === 'undefined') {
-    console.log(req.cookies)
+  if (req.cookies.user === undefined) {
     res.redirect('/login')
     return
   }
   res.render("pages/urls_new", {
-    userID: req.cookies.userID
+    userID: req.cookies.user
   })
 })
 
 app.get("/urls/:id", (req, res) => {
-  if (req.cookies.userID.userID !== urlDatabase[req.params.id].userID) {
+  if (req.cookies.user.userID !== urlDatabase[req.params.id].userID) {
     res.redirect(403, '/urls')
     return
   }
   res.render("pages/urls_show", { 
     shortURL: req.params.id,
     longURL: urlDatabase[req.params.id].longURL,
-    userID: req.cookies.userID
+    userID: req.cookies.user
   })
 })
 
 // GET for Login/Signup -------------------------------------
 
 app.get("/logout", (req, res) => {
-  res.clearCookie('userID')
+  res.clearCookie('user')
   res.redirect(`/urls`)
 })
 
 app.get("/login", (req, res) => {
   res.render("pages/urls_login", {
-    userID: req.cookies.userID
+    userID: req.cookies.user
   })
 })
 
 app.get("/register", (req, res) => {
   res.render('pages/urls_register', {
     links: urlDatabase,
-    userID: req.cookies.userID
+    userID: req.cookies.user
   })
 })
 
@@ -112,7 +114,7 @@ app.get("/register", (req, res) => {
 
 // Add URL
 app.post("/urls", (req, res) => {
-  if (req.cookies.userID === 'undefined') {
+  if (req.cookies.user === undefined) {
     res.redirect('/login')
     return
   }
@@ -120,15 +122,14 @@ app.post("/urls", (req, res) => {
   let shortURL = generateRandomString(req.body['longURL'])
   urlDatabase[shortURL] = {}
   urlDatabase[shortURL].longURL = req.body['longURL']
-  urlDatabase[shortURL].userID = req.cookies.userID.userID
-  console.log(urlDatabase)
+  urlDatabase[shortURL].userID = req.cookies.user.userID
 
   res.redirect(`/urls/${shortURL}`);
 })
 
 // Edit URL
 app.post("/urls/:id", (req, res) => {
-  if (req.cookies.userID.userID !== urlDatabase[req.params.id].userID) {
+  if (req.cookies.user.userID !== urlDatabase[req.params.id].userID) {
     res.redirect(403, '/urls')
     return
   }
@@ -141,7 +142,7 @@ app.post("/urls/:id", (req, res) => {
 
 // Delete URL
 app.post("/urls/:id/delete", (req, res) => {
-  if (req.cookies.userID.userID !== urlDatabase[req.params.id].userID) {
+  if (req.cookies.user.userID !== urlDatabase[req.params.id].userID) {
     res.redirect(403, '/urls')
     return
   }
@@ -159,7 +160,7 @@ app.post("/login", (req, res) => {
     res.send(403)
   }
   else if (users[passLookup[1]].password === req.body['password']) {
-    res.cookie('userID', users[passLookup[1]])
+    res.cookie('user', users[passLookup[1]])
     res.redirect(`/`)
   } 
 })
@@ -183,8 +184,7 @@ app.post("/register", (req, res) => {
   users[userID].email = req.body['email']
   users[userID].password = req.body['password']
   users[userID].urls = {}
-  console.log(users)
-  res.cookie('userID', users[userID])
+  res.cookie('user', users[userID])
 
   res.redirect(`/urls`)
 })
@@ -196,6 +196,28 @@ app.listen(PORT, () => {
 })
 
 // ------------------------------------------------------
+
+function getUserURLs(userID) {
+  let urls = {  }
+
+  for (let i = 0; i < userID['urls'].length; i++) {
+    urls[userID['urls'][i]] = urlDatabase[userID['urls'][i]]
+  }
+
+  /*
+
+  Display all urls from a single member
+  Each member has list of urls
+  save each url from member into var
+  create object to store list of short:long pairs
+  for each:
+    store short and give value from urlsDatabase
+  return object
+
+  */
+
+  return urls
+}
 
 function matchToPassword(loginInfo, password) {
   var userID = ""
