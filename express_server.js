@@ -11,24 +11,24 @@ app.use(cookieParser())
 const urlDatabase = {
   "b2xVn2":  {
     longURL: "http://www.lighthouselabs.ca",
-    userID: "asdfa"
+    user: "asdfa"
   },
   "9sm5xK": {
     longURL: "http://www.google.com",
-    userID: "fdsa"
+    user: "fdsa"
   }
 }
 
 const users = {
   "asdfa": {
-    userID: "asdfa",
+    user: "asdfa",
     username: "hello",
     email: "banana@id.com",
     password: "hello",
     urls: ["b2xVn2"]
   },
   "fdsa": {
-    userID: "fdsa",
+    user: "fdsa",
     username: "yo",
     email: "banan@ud.com",
     password: "hello",
@@ -44,8 +44,8 @@ const users = {
 
 app.get("/", (req, res) => {
   res.render("pages/urls_index", {
-      links: urlDatabase,
-      userID: req.cookies.user
+      urlDB: urlDatabase,
+      user: req.cookies.user
     })
 })
 
@@ -62,8 +62,8 @@ app.get("/urls/", (req, res) => {
   var userURLs = getUserURLs(users[req.cookies.user.userID])
 
   res.render("pages/urls_index", {
-    links: userURLs,
-    userID: req.cookies.user
+    urlDB: userURLs,
+    user: req.cookies.user
   })
 })
 
@@ -73,7 +73,7 @@ app.get("/urls/new", (req, res) => {
     return
   }
   res.render("pages/urls_new", {
-    userID: req.cookies.user
+    user: req.cookies.user
   })
 })
 
@@ -85,7 +85,7 @@ app.get("/urls/:id", (req, res) => {
   res.render("pages/urls_show", { 
     shortURL: req.params.id,
     longURL: urlDatabase[req.params.id].longURL,
-    userID: req.cookies.user
+    user: req.cookies.user
   })
 })
 
@@ -98,14 +98,14 @@ app.get("/logout", (req, res) => {
 
 app.get("/login", (req, res) => {
   res.render("pages/urls_login", {
-    userID: req.cookies.user
+    user: req.cookies.user
   })
 })
 
 app.get("/register", (req, res) => {
   res.render('pages/urls_register', {
-    links: urlDatabase,
-    userID: req.cookies.user
+    urlDB: urlDatabase,
+    user: req.cookies.user
   })
 })
 

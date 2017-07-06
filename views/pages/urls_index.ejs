@@ -7,12 +7,15 @@
   <% include ../partials/_header.ejs %>
 
   <ul class="list-group">
-    <% for (let link in links) { %>
-    <li class="list-group-item"><b><%= link %></b> - <%= links[link].longURL %>
-      <a href="/urls/<%=link%>"><button class="btn btn-warning">Edit</button></a>
-      <form style="display: inline-block;"method="POST" action="/urls/<%= link %>/delete">
+    <% for (let shortLink in urlDB) { %>
+    <li class="list-group-item"><b><%= shortLink %></b> - <%= urlDB[shortLink].longURL %>
+    <%= console.log(user, urlDB[shortLink].user, user.userID) %>
+    <% if (urlDB[shortLink].user === user.userID) { %>
+      <a href="/urls/<%=shortLink%>"><button class="btn btn-warning">Edit</button></a>
+      <form style="display: inline-block;"method="POST" action="/urls/<%= shortLink %>/delete">
         <button class="btn btn-danger" aria-label="Left Align" name="delete" value="delete"><span class="glyphicon glyphicon-trash"></span> Delete</button>
       </form>
+      <% } %>
     </li>
 
     <% }; %>
