@@ -2,6 +2,7 @@ const express = require("express")
 const app = express()
 const bodyParser = require("body-parser")
 const cookieParser = require("cookie-parser")
+const bcrypt = require("bcrypt")
 const PORT = process.env.PORT || 8080 // default port 8080
 
 app.set("view engine", "ejs")
@@ -45,6 +46,7 @@ const users = {
 app.get("/", (req, res) => {
   res.render("pages/urls_index", {
       urlDB: urlDatabase,
+      userDB: users,
       user: req.cookies.user
     })
 })
@@ -59,7 +61,7 @@ app.get("/urls/", (req, res) => {
     return
   }
   
-  var userURLs = getUserURLs(users[req.cookies.user.userID])
+  const userURLs = getUserURLs(users[req.cookies.user.userID])
 
   res.render("pages/urls_index", {
     urlDB: userURLs,
@@ -73,6 +75,7 @@ app.get("/urls/new", (req, res) => {
     return
   }
   res.render("pages/urls_new", {
+    urlDB: urlDatabase,
     user: req.cookies.user
   })
 })
@@ -83,9 +86,10 @@ app.get("/urls/:id", (req, res) => {
     return
   }
   res.render("pages/urls_show", { 
+    urlDB: urlDatabase,
+    user: req.cookies.user,
     shortURL: req.params.id,
-    longURL: urlDatabase[req.params.id].longURL,
-    user: req.cookies.user
+    longURL: urlDatabase[req.params.id].longURL
   })
 })
 
@@ -98,6 +102,7 @@ app.get("/logout", (req, res) => {
 
 app.get("/login", (req, res) => {
   res.render("pages/urls_login", {
+    urlDB: urlDatabase,
     user: req.cookies.user
   })
 })
@@ -122,6 +127,7 @@ app.post("/urls", (req, res) => {
   let shortURL = generateRandomString(req.body['longURL'])
   urlDatabase[shortURL] = {}
   urlDatabase[shortURL].longURL = req.body['longURL']
+
   urlDatabase[shortURL].userID = req.cookies.user.userID
 
   res.redirect(`/urls/${shortURL}`);
@@ -155,11 +161,11 @@ app.post("/urls/:id/delete", (req, res) => {
 
 // Login
 app.post("/login", (req, res) => {
-  var passLookup = matchToPassword(req.body['emailOrUsername'])
+  const passLookup = matchToPassword(req.body['emailOrUsername'])
   if (!passLookup[0]) {
     res.send(403)
   }
-  else if (users[passLookup[1]].password === req.body['password']) {
+  else if (bcrypt.compareSync(req.body['password'], users[passLookup[1]].password)) {
     res.cookie('user', users[passLookup[1]])
     res.redirect(`/`)
   } 
@@ -176,15 +182,8 @@ app.post("/register", (req, res) => {
     return
   }
   
-  let userID = generateRandomString();
-  
-  users[userID] = { }
-  users[userID].userID = userID
-  users[userID].username = req.body['username']
-  users[userID].email = req.body['email']
-  users[userID].password = req.body['password']
-  users[userID].urls = {}
-  res.cookie('user', users[userID])
+  const user = createNewUser(req)
+  res.cookie('user', user)
 
   res.redirect(`/urls`)
 })
@@ -197,6 +196,22 @@ app.listen(PORT, () => {
 
 // ------------------------------------------------------
 
+function createNewUser(req) {
+  const userID = generateRandomString()
+  
+  users[userID] = { }
+  users[userID].userID = userID
+  users[userID].username = req.body['username']
+  users[userID].email = req.body['email']
+
+  const password = req.body['password']
+  const hashed_password = bcrypt.hashSync(password, 10)
+  users[userID].password = hashed_password
+  users[userID].urls = {}
+
+  return users[userID]
+}
+
 function getUserURLs(userID) {
   let urls = {  }
 
@@ -204,23 +219,11 @@ function getUserURLs(userID) {
     urls[userID['urls'][i]] = urlDatabase[userID['urls'][i]]
   }
 
-  /*
-
-  Display all urls from a single member
-  Each member has list of urls
-  save each url from member into var
-  create object to store list of short:long pairs
-  for each:
-    store short and give value from urlsDatabase
-  return object
-
-  */
-
   return urls
 }
 
 function matchToPassword(loginInfo, password) {
-  var userID = ""
+  let userID = ""
   for (let user in users) {
     userID = users[user].userID
     if (users[user].email === loginInfo || users[user].username === loginInfo) {
