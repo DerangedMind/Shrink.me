@@ -1,18 +1,32 @@
 const express = require('express')
-const app = express()
 const bodyParser = require('body-parser')
 const bcrypt = require('bcrypt')
 const cookieSession = require('cookie-session')
+const methodOverride = require('method-override')
+const app = express()
 const PORT = process.env.PORT || 8080 // default port 8080
 
 app.set('view engine', 'ejs')
 app.use(bodyParser.urlencoded({extended: true}))
+app.use(methodOverride('X-HTTP-Method-Override'));
+app.use(methodOverride('_method'));
 app.use(cookieSession( {
   name: 'session',
   keys: ['key1', 'key2'],
 
   maxAge: 24 * 60 * 60 * 1000
 }))
+
+app.use(methodOverride(function (req, res) {
+  if (req.body && typeof req.body === 'object' && '_method' in req.body) {
+    // look in urlencoded POST bodies and delete it
+    var method = req.body._method;
+    delete req.body._method;
+    return method;
+  }
+}));
+
+
 
 // Wanted to place URL key:values into the users object,
 // but this would then require the tinyURL link to search 
@@ -108,10 +122,6 @@ function generateRandomString() {
 
   return randomString
 }
-
-// if i want to not repeat myself,
-// we could create our own middleware
-// 
 
 // GET for Redirect URLs ----------------------------------
 
@@ -210,9 +220,9 @@ app.post('/urls', (req, res) => {
   
   res.redirect(`/urls/${shortURL}`)
 })
-// TO FIX USER.USERID
+
 // Edit URL
-app.post('/urls/:id', (req, res) => {
+app.put('/urls/:id', (req, res) => {
   if (users[req.session.user].urls[req.params.id] !== urlDatabase[req.params.id]) {
     res.redirect(403, '/urls')
     return
@@ -224,7 +234,7 @@ app.post('/urls/:id', (req, res) => {
 })
 
 // Delete URL
-app.post('/urls/:id/delete', (req, res) => {
+app.delete('/urls/:id/delete', (req, res) => {
   if (users[req.session.user].urls[req.params.id] !== urlDatabase[req.params.id]) {
     res.redirect(403, '/urls')
     return
@@ -232,8 +242,6 @@ app.post('/urls/:id/delete', (req, res) => {
   delete users[req.session.user].urls[req.params.id]
   delete urlDatabase[req.params.id]
   res.redirect('/urls')
-
-  ///////////// need to redirect but give the proper objects
 })
 
 
