@@ -282,17 +282,15 @@ app.delete('/urls/:id/delete', (req, res) => {
 
 // Login
 app.post('/login', (req, res) => {
-  const passLookup = emailOrUserExists(req.body['emailOrUsername'])
+  
+  const userLookup = emailOrUserExists(req.body['emailOrUsername'])
 
-  if (!passLookup[0]) {
+  if (!userLookup[0]) {
     res.send(403, 'Wrong username or password')
   }
-  else if (bcrypt.compareSync(req.body['password'], passLookup[1].password)) {
-    req.session.user = passLookup[1].userID
+  else if (bcrypt.compareSync(req.body['password'], userLookup[1].password)) {
+    req.session.user = userLookup[1].userID
     res.redirect('/')
-  } 
-  else {
-    return
   }
 })
 
@@ -306,10 +304,10 @@ app.post('/register', (req, res) => {
     res.redirect(400, '/register')
     return
   }
-  console.log(emailOrUserExists(req.body['email'], req.body['username'])[0])
+
   const user = createNewUser(req)
   req.session.user = user.userID
-  console.log(users)
+
   res.redirect('/urls')
 })
 
