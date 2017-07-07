@@ -26,17 +26,22 @@ app.use(methodOverride(function (req, res) {
   }
 }));
 
-
-
 // Wanted to place URL key:values into the users object,
 // but this would then require the tinyURL link to search 
 // each user. urlDatabase is only created so that we can
 // easily lookup the key:value pair
 
 const urlDatabase = {
-  'b2xVn2': 'http://www.lighthouselabs.ca',
-  '9sm5xK': 'http://www.google.com'
+  'b2xVn2': {
+    longURL: 'http://www.lighthouselabs.ca',
+    visitors: { },
+  },
+  '9sm5xK': {
+    longURL: 'http://www.google.com',
+    visitors: { }
+  }
 }
+
 
 const users = {
   'asdfa': {
@@ -71,7 +76,9 @@ function createNewURL(req) {
   }
 
   users[req.session.user]['urls'][shortURL] = longURL
-  urlDatabase[shortURL] = longURL
+  urlDatabase[shortURL] = { }
+  urlDatabase[shortURL].longURL = longURL
+  urlDatabase[shortURL].visitors = { }
 
   return shortURL
 }
@@ -123,6 +130,28 @@ function generateRandomString() {
   return randomString
 }
 
+function getTimestamp() {
+  let time = ''
+  let date = new Date()
+  let year = date.getFullYear().toString() 
+  let month = addZerosForTime((date.getMonth() + 1).toString())
+  let day = addZerosForTime(date.getDate().toString() )
+  let hour = addZerosForTime(date.getUTCHours().toString())
+  let minute = addZerosForTime(date.getUTCMinutes().toString())
+  let seconds = addZerosForTime(date.getUTCSeconds().toString())
+
+  time = `${year}/${month}/${day} ${hour}:${minute}:${seconds}`
+
+  return time
+}
+
+function addZerosForTime(string) {
+  while (string.length < 2) {
+    string = "0" + string
+  }
+  return string
+}
+
 // GET for Redirect URLs ----------------------------------
 
 app.get('/', (req, res) => {
@@ -134,7 +163,23 @@ app.get('/', (req, res) => {
 })
 
 app.get('/u/:shortURL', (req, res) => {
-  res.redirect(`${urlDatabase[req.params.shortURL]}`)
+  if (req.session.user === undefined && req.session.visitor === undefined) {
+    req.session.visitor = generateRandomString()
+  }
+  let shortURL = req.params.shortURL
+  let visitor = req.session.user || req.session.visitor
+
+  if (urlDatabase[shortURL].visitors[visitor] === undefined) {
+    urlDatabase[shortURL].visitors[visitor] = { }
+    urlDatabase[shortURL].visitors[visitor].ID = visitor
+    urlDatabase[shortURL].visitors[visitor].timestamps = []
+  }
+
+  urlDatabase[shortURL].visitors[visitor].timestamps.push(getTimestamp())
+
+  console.log(urlDatabase[shortURL].visitors)
+
+  res.redirect(`${urlDatabase[req.params.shortURL].longURL}`)
 })
 
 // GET for User URL pages ----------------------------------
@@ -164,7 +209,7 @@ app.get('/urls/new', (req, res) => {
 })
 
 app.get('/urls/:id', (req, res) => {
-  if (users[req.session.user].urls[req.params.id] !== urlDatabase[req.params.id]) {
+  if (users[req.session.user].urls[req.params.id] !== urlDatabase[req.params.id].longURL) {
     res.redirect(403, '/urls')
     return
   }
@@ -223,7 +268,7 @@ app.post('/urls', (req, res) => {
 
 // Edit URL
 app.put('/urls/:id', (req, res) => {
-  if (users[req.session.user].urls[req.params.id] !== urlDatabase[req.params.id]) {
+  if (users[req.session.user].urls[req.params.id] !== urlDatabase[req.params.id].longURL) {
     res.redirect(403, '/urls')
     return
   }
@@ -235,7 +280,7 @@ app.put('/urls/:id', (req, res) => {
 
 // Delete URL
 app.delete('/urls/:id/delete', (req, res) => {
-  if (users[req.session.user].urls[req.params.id] !== urlDatabase[req.params.id]) {
+  if (users[req.session.user].urls[req.params.id] !== urlDatabase[req.params.id].longURL) {
     res.redirect(403, '/urls')
     return
   }

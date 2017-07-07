@@ -6,7 +6,25 @@
 
     <% include ../partials/_header.ejs %>
 
-    <p><b><%= shortURL %></b> - <%= longURL %> </p>
+    <p><b><%= shortURL %></b> - <%= longURL.longURL %> </p>
+
+    <% let totalVisits = 0; 
+        for (let visitor in longURL.visitors) {
+          totalVisits += longURL.visitors[visitor].timestamps.length
+        }
+    %>
+    <p>Total visits: <%= totalVisits %></p>
+    <p>Unique visits: <%= Object.keys(longURL.visitors).length %></p>
+    <% if (Object.keys(longURL.visitors).length > 0) { %>
+    <p>Timestamps:</p>
+    <ul>
+      <% for (let visitor in longURL.visitors) { %>
+        <% for (let i = 0; i < longURL.visitors[visitor].timestamps.length; i++) { %>
+        <li><%= longURL.visitors[visitor].timestamps[i] %></li>
+      <% }} %>
+    </ul>
+    <% } %>
+    
     
     <form style="display: inline-block; margin-left: 5%;" method="POST" action="/urls/<%= shortURL %>?_method=PUT">
       <input id="longURL" type="text" name="longURL" placeholder="https://" style="width: 300px;">
