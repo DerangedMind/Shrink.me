@@ -109,10 +109,11 @@ function getUserURLs(userID) {
   return urls
 }
 
-function emailOrUserExists(loginInfo) {
-  // {...} in asdfas
+function emailOrUserExists(email, username = email) {
+
   for (let userID in users) {
-    if (users[userID].email === loginInfo || users[userID].username === loginInfo) {
+    console.log(users[userID])
+    if (users[userID].email === email || users[userID].username === username) {
       return [true, users[userID]]
     }
   }
@@ -318,10 +319,10 @@ app.post('/register', (req, res) => {
     res.redirect(400, '/register')
     return
   }
-  
+  console.log(emailOrUserExists(req.body['email'], req.body['username'])[0])
   const user = createNewUser(req)
   req.session.user = user.userID
-
+  console.log(users)
   res.redirect('/urls')
 })
 
