@@ -166,8 +166,6 @@ app.get('/u/:shortURL', (req, res) => {
 
   urlDatabase[shortURL].visitors[visitor].timestamps.push(getTimestamp())
 
-  console.log(urlDatabase[shortURL].visitors)
-
   res.redirect(`${urlDatabase[req.params.shortURL].longURL}`)
 })
 
@@ -179,10 +177,8 @@ app.get('/urls', (req, res) => {
     return
   }
 
-  const userURLs = users[req.session.user].urls
-
   res.render('pages/urls_index', {
-    userURLs: userURLs,
+    userURLs: users[req.session.user].urls,
     user: users[req.session.user]
   })
 })
@@ -261,9 +257,10 @@ app.put('/urls/:id', (req, res) => {
     res.redirect(403, '/urls')
     return
   }
-  delete users[req.session.user].urls[req.params.id]
   
+  delete users[req.session.user].urls[req.params.id]
   const shortURL = createNewURL(req)
+
   res.redirect(`/urls/${shortURL}`)
 })
 
@@ -273,8 +270,10 @@ app.delete('/urls/:id/delete', (req, res) => {
     res.redirect(403, '/urls')
     return
   }
+  
   delete users[req.session.user].urls[req.params.id]
   delete urlDatabase[req.params.id]
+  
   res.redirect('/urls')
 })
 
