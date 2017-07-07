@@ -1,8 +1,8 @@
-# TinyApp Project
+# Tin-Tiny URL Shortener
 
-TinyApp is a full stack web application built with Node and Express that allows users to shorten long URLs (à la bit.ly).
+Tin-Tiny is a full stack web application built with Node and Express that allows users to shorten long URLs (à la bit.ly).
 
-## Final Product
+Tin-Tiny will also track how many times these links are clicked (including unique clicks). It will also save timestamps so that you can track when your links are most used.
 
 !["tinyURL home"](https://github.com/DerangedMind/TinyURLWebApp/blob/master/docs/tinyURL_urlList.png?raw=true)
 !["tinyURL edit"](https://github.com/DerangedMind/TinyURLWebApp/blob/master/docs/tinyURL_edit.png?raw=true)
@@ -15,6 +15,7 @@ TinyApp is a full stack web application built with Node and Express that allows 
 - bcrypt
 - body-parser
 - cookie-session
+- method-override
 
 ## Getting Started
 
