@@ -6,7 +6,7 @@
 
     <% include ../partials/_header.ejs %>
 
-    <p><b><%= shortURL %></b> - <%= longURL.longURL %> </p>
+    <p style="overflow-wrap: break-word;"><a href="/u/<%=shortURL%>"><b><%= shortURL %></b></a> - <%= longURL.longURL %> </p>
 
     <% let totalVisits = 0; 
         for (let visitor in longURL.visitors) {
@@ -16,24 +16,31 @@
     <p>Total visits: <%= totalVisits %></p>
     <p>Unique visits: <%= Object.keys(longURL.visitors).length %></p>
     <% if (Object.keys(longURL.visitors).length > 0) { %>
-    <p>Timestamps:</p>
-    <ul>
-      <% for (let visitor in longURL.visitors) { %>
-        <% for (let i = 0; i < longURL.visitors[visitor].timestamps.length; i++) { %>
-        <li><%= longURL.visitors[visitor].timestamps[i] %></li>
-      <% }} %>
-    </ul>
+      <p>Timestamps:</p>
+      <ul>
+        <% for (let visitor in longURL.visitors) { %>
+          <% for (let i = 0; i < longURL.visitors[visitor].timestamps.length; i++) { %>
+            <li><%= longURL.visitors[visitor].timestamps[i] %></li>
+        <% }} %>
+      </ul>
     <% } %>
-    
-    
-    <form style="display: inline-block; margin-left: 5%;" method="POST" action="/urls/<%= shortURL %>?_method=PUT">
-      <input id="longURL" type="text" name="longURL" placeholder="https://" style="width: 300px;">
-      <button class="btn btn-warning" aria-label="Center Align" name="edit" value="edit"><span class="glyphicon glyphicon-pencil"></span> Edit</button>
-    </form>
-
-    <form style="display: inline-block;" method="POST" action="/urls/<%= shortURL %>/delete?_method=DELETE">
-      <button class="btn btn-danger" aria-label="Center Align" name="delete" value="delete" onclick="if (confirm('Are you sure you want to delete this link?') == true) return true; else return false;"><span class="glyphicon glyphicon-trash"></span> Delete</button>
-    </form>
+    <div class="row">
+        <form class="col-xs-6 col-md-8" style="padding-right: 0;" method="POST" action="/urls/<%= shortURL %>?_method=PUT">
+          <div class="input-group">
+            <input class="form-control"id="longURL" type="text" name="longURL" placeholder="https://example.com/gifs/cats">
+            <span class="input-group-btn">
+              <button class="btn btn-warning" style="border-radius: 0;" aria-label="Center Align" name="edit" value="edit">
+                <span class="glyphicon glyphicon-pencil"></span> Edit
+              </button>
+            </span>
+          </div>
+        </form>
+        <form class="col-xs-6 col-md-4" style="padding-left: 0; margin-left: -2px;" method="POST" action="/urls/<%= shortURL %>/delete?_method=DELETE">
+          <button class="btn btn-danger" style="border-bottom-left-radius: 0; border-bottom-right-radius: 4px; border-top-left-radius: 0; border-top-right-radius: 4px;" aria-label="Center Align" name="delete" value="delete" onclick="if (confirm('Are you sure you want to delete this link?') == true) return true; else return false;">
+            <span class="glyphicon glyphicon-trash"></span> Delete
+          </button>
+        </form>
+    </div>
   <% include ../partials/_footer.ejs %>
 
   </body>
