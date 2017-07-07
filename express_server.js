@@ -98,21 +98,9 @@ function createNewUser(req) {
   return users[userID]
 }
 
-function getUserURLs(userID) {
-  let urls = {  }
-  const userURLs = users[userID]['urls']
-  for (let i = 0; i < Object.keys(userURLs).length; i++) {
-
-    urls[userURLs[i]] = urlDatabase[userURLs[i]]
-  }
-
-  return urls
-}
-
 function emailOrUserExists(email, username = email) {
 
   for (let userID in users) {
-    console.log(users[userID])
     if (users[userID].email === email || users[userID].username === username) {
       return [true, users[userID]]
     }
